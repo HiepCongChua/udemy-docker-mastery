@@ -12,10 +12,13 @@ My other DevOps and Docker resources are at https://www.bretfisher.com/docker
 
 Feel free to create issues or PRs if you find a problem with examples in this repo!
 
+
+
+
 Image vs Container
 
  * Một Image là ứng dụng chúng ta muốn chạy
- * Một Container là một instance of Image chạy trên một process
+ * Một Container là một instance  Image chạy trên một process
  * Từ đó suy ra có thể có nhiều contaiers chạy cùng một Image 
 
  * Hiện tại docker đã support chính thức cho cấu trúc câu lệnh mới nhưng cấu trúc câu lệnh cũ vẫn họat động.
@@ -61,8 +64,8 @@ Image vs Container
 - docker container rm -f {listContainer}
 + Xóa các container trong list kể cả nó vẫn đang chạy
 
-- docker top ${containerId}
-+ Có thể có rất nhiều container trên Image nếu chúng ta muốn xem info của nó thì sử dụng lệnh docker top
+- docker container top ${containerId||containerName}
++ Sử dụng docker container top để thấy được các process riêng biệt chạy bên trong một container, vs PID chính là ID của process đó.
 
 - docker ps vs docker container ls 
 + Câu lệnh có chức năng giống nhau đều hiển thị list các container đang hoạt động
@@ -84,11 +87,11 @@ Image vs Container
 
 
 * Điều gì xảy ra chạy "docker container run" ?
-+ B1 Docker sẽ tìm kiếm Image trong cache ở local mà chúng ta đã chỉ định ở cuối câu lệnh 
++ B1 Docker sẽ tìm kiếm Image trong cache ở local mà chúng ta đã chỉ định ở cuối câu lệnh  
 + B2 Nếu không tìm thấy Image nó sẽ lên DockerHub (default) để tìm. 
 + B3 Chúng ta có thể chỉ định phiên bản cho Image theo mặc định nó sẽ dowload version mới nhất.
 + B4 Docker sẽ tạo ra một container mới dựa trên Image, tưởng tượng nó như một layout phía trên cùng của Image.
-+ B5 Docker sẽ custom networking, cung cấp một địa chỉ IP ảo cụ thể nằm trong Docker Visual Network.
++ B5 Docker sẽ custom networking, cung cấp một địa chỉ IP ảo cụ thể nằm trong Docker Engine.
 + B6 Docker sẽ mở cổng nếu chúng ta chỉ định nếu chúng ta không chỉ định nó sẽ không mở cổng nào (Giả sử nếu chúng ta chỉ định cổng 80 thì có nghĩa chúng ta nói với Docker rằng hãy lấy cổng 80 trên server và chuyển tiếp tất cả lưu lượng truy cập vào trong cổng 80 của container )
 
 VD: docker container run--publish 8080:80 -name webhost -d nginx:1.11 nginx -T
@@ -104,19 +107,61 @@ docker container run -d --name webserver -p 8080:80 httpd
 
 
 
+
+
+
+
+
+* So sánh Container và VM
+- Container chỉ là tập hợp của nhiều processes chạy trên HĐH của máy tính.
+- Container cũng bị giới hạn những tài nguyên mà nó có thể truy cập
+- Container dừng khi process dừng.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 * Getting a shell inside container
 - docker container run -it 
-+ bắt đầu với một container tương tác
++ tạo ra một container rồi tương tác trực tiếp với nó.
 
-- docker container exec -it
-+ chạy lệnh bổ sung trong container hiện có. 
+- docker container start -ai ${containerName}
++ Khởi động lại một container đã stop rồi giao tiếp với nó thông qua terminal
+
+- docker container exec -it ${containerName}
++ tương tác trực tiếp vs một container đã tồn tại và đang chạy thông qua terminal
 
 => Đi kèm với it có rất nhiều option
 - bash shell : nếu chạy cùng với it, nó sẽ cung cấp cho bạn tterminal để chạy bên trong container , khi đã ở trong container chúng ta sử  lệnh "ls -al" để xem tất cả tài nguyên trong container
 - Nếu muốn chạy bash đó thì sử dụng lệnh
 docker container start -ai ${containerName}
 
-- Nếu muốn thấy những gì đang chạy trong container = shell hay nói cách khác là chạy quy trình bổ sung (run additional process in running container) trong container
+- Nếu muốn thấy những gì đang chạy trong container = shell hay nói cách khác là kiểm tra các quy trình bổ sung (run additional process in running container) trong container
 => docker container exec -it {containerName} bash
 => Bằng cách này bạn tạo ra một process mới trong container nên khi close bash thì container vẫn chạy bình thường.
 
