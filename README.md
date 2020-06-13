@@ -109,43 +109,10 @@ docker container run -d --name webserver -p 8080:80 httpd
 
 
 
-
-
-
 * So sánh Container và VM
 - Container chỉ là tập hợp của nhiều processes chạy trên HĐH của máy tính.
 - Container cũng bị giới hạn những tài nguyên mà nó có thể truy cập
 - Container dừng khi process dừng.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 * Getting a shell inside container
 - docker container run -it 
 + tạo ra một container rồi tương tác trực tiếp với nó.
@@ -154,10 +121,10 @@ docker container run -d --name webserver -p 8080:80 httpd
 + Khởi động lại một container đã stop rồi giao tiếp với nó thông qua terminal
 
 - docker container exec -it ${containerName}
-+ tương tác trực tiếp vs một container đã tồn tại và đang chạy thông qua terminal
++ Tạo ra một quy trình mới bên trong một container đã chạy dùng để tương tác trực tiếp vs một container đã tồn tại và đang chạy thông qua terminal
 
 => Đi kèm với it có rất nhiều option
-- bash shell : nếu chạy cùng với it, nó sẽ cung cấp cho bạn tterminal để chạy bên trong container , khi đã ở trong container chúng ta sử  lệnh "ls -al" để xem tất cả tài nguyên trong container
+- bash shell : nếu chạy cùng với it, nó sẽ cung cấp cho bạn terminal để chạy bên trong container , khi đã ở trong container chúng ta sử  lệnh "ls -al" để xem tất cả tài nguyên trong container
 - Nếu muốn chạy bash đó thì sử dụng lệnh
 docker container start -ai ${containerName}
 
@@ -186,12 +153,14 @@ Docker Networks : Concepts
 - Hiển cách thức các gói mạng di chuyển xung quanh Docker
 - Làm sao để các container có thể nói chuyện được với nhau.
 
-- Khi bạn start một container thì ở dưới nền bạn thực sự đang kết nối đến một Docker Network cụ thể
-- Môi container đều kết nối private đến một cổng mạng ảo (virtual network bridge)
+- Khi bạn start một container thì ở dưới nền (background) bạn thực sự đang kết nối đến một Docker Network cụ thể
+- Môi container đều kết nối đến một private network virtual còn được gọi là  (virtual network bridge)
 - Mỗi tuyến mạng ảo (virtual network routes) thông qua tường lửa NAT (firewall NAT) trên IP máy chủ (host IP)
 - Thực ra là docker deamon đã cấu hình địa chỉ IP (IP address) của máy chủ trên giao diện mặc định của nó để container có thể kết nối được internet
 - Tất cả container trên mạng ảo (virtual network) có thể giao tiếp với nhau mà không cần -p khác với server của chúng ta .
 
+- docker container port ${containerName}
++ 
 Phân tích câu lệnh: docker container run -p 80:80 --name webhost -d nginx
 chúng ta sử dụng -p để setup port
 + Giá trị bên trái là yêu cầu Host OS System ở một cổng với giá trị tương ứng 
@@ -203,6 +172,7 @@ chúng ta sử dụng -p để setup port
 + mạng "my_web_app" cho mysql và php/apache container, ở netwokr my_web_app thì mysql container và php/apache container có thể giao tiếp với nhau vì chúng đang nằm trên cùng một virtual network
 + mạng "my_api" cho mongo và node.js container, tương tự như my_web_api các container trong mạng này có thể nói chuyện với nhau => nhưng rõ ràng chúng không thể giao tiếp với những container ở network khác được.
 
+- docker container port ${containerName}
 
 - Batteries Included , But removable
 - Mặc định hoạt động tốt trong nhiều trường hợp nhưng dễ dàng tráo đổi của những phần của chúng ta để tùy chỉnh.
@@ -215,6 +185,16 @@ chúng ta sử dụng -p để setup port
 
 - Nếu bạn muốn lấy IP address của container
 + docker container inspect --format "{{ .NetworkSettings.IPAddress}}" ${containerName}
+
+- Khái niệm cơ bản về  docker network
++ Giả sử chúng ta có một HĐH trong trường hợp này là Ubuntu và Physical Network , Ubuntu sẽ kết nối với Physical Network để có thể kết nối tới mạng internet.
++ Ở trên HĐH có một thứ gọi là NAT , hiểu đơn giản nó như một tường lửa kiểm soát lưu lượng truy cập Internet ra vào HĐH
++ Lúc này docker network xuất hiện nó tạo ra một thứ gọi là "Bridge Network/ Hay còn gọi là Docker 0"
++ Khi bạn chạy một container, mặc định nó sẽ được join vào Bridge Network, Bridge Network sẽ được tự động gán vào Interface Ethernet từ đó container có thể thông qua Bridge Network để truy cập internet
++ Như vậy giả sử chúng ta chạy docker contaner run -p 8080:80 có nghĩa là chúng ta đang yêu cầu mở một cổng 8080 trên Interface Ethernet và mọi lưu lượng truy cập đi qua cổng 8080 sẽ được chuyển tiếp đến cổng 80 trên container.
++ Khi mình tạo ra một container nữa mặc định nó cũng sẽ được join vào Bridge Network, 2 hay nhiều container cùng Bridge Network có thể giao tiếp dễ dàng với nhau nhưng bạn không chỉ định -p thì sẽ không có lưu lượng đi qua container đó.
+
++ Chúng ta cũng có thể tạo ra nhiều docker virtual network
 
 - Trong docker network mỗi container đều có một IP ảo => mỗi container có thể sử dụng port 80 (giả sử) của riêng nó ví dụ (contaier1 1275.34534.345:80 container2 12234.23423.534:80) nhưng khi public lên máy chủ bạn sẽ gặp lỗi nếu một container (hoặc app server) đang sử dụng chung cổng.
 
@@ -249,12 +229,12 @@ chúng ta sử dụng -p để setup port
 
 Docker Networks : CLI Management
 + Show networks docker network ls (hiển thi list các network)
-+ Quan sát một network : docker network inspect
++ Kiểm tra thông tin một network : docker network inspect
 + Tạo mới một network : docker network create --driver
 Sử dụng diver của bên thứ 3 để tạo một network mới
 + Attach a network to container : docker network connect (sử dụng NIC để kết nối container network tới internet)
 + Detach a network form container : docker network disconnect
-
+- Ngắt kết nối một network để có thể join vào một network khác
 +  -- network bridge : docker network inspect bridge
 Hiển thị thông tin về network của docker host
 Sau khi chạy lệnh trên hãy nhìn vào dòng IPAM
@@ -278,6 +258,13 @@ docker network disconnect ${networkId} ${containerId}
 nó sẽ tự động loại bỏ một NIC của một container trên một virtual network
 
 
+- Sử dụng lệnh : docker network inspect ${networkId}
++ Để xem chi tiết của từng network, có những container nào đang được attach vào network đó.
++ Sử dụng lệnh : docker network creat ${networkName}
++ Tạo ra một network mới sử dụng mặc định drive bridge , sử dụng docker network create --help để biết nhiều thông tin hơn.
+
++ Sử dụng option --network lúc run một container để attach container đó vào network bạn muốn.
+- docker container run -d -p 80:80 --network ${networkName} --name ${containerName} ${nginx}
 
 
 
@@ -319,14 +306,14 @@ nó sẽ tự động loại bỏ một NIC của một container trên một vi
 Docker Network : DNS
 
 - Hiểu DNS cách nó ảnh hưởng đến các container trong các custom network.
-- Hiểu tại sao coi DNS như một chìa khóa để đi vào trong container - Xem cách hoạt động theo mặc định của các mạng tùy chỉnh.
-- Hiểu sự khác nhau giữa default networl và custom network
+- Hiểu tại sao coi DNS như một chìa khóa để có thể giao tiếp với  container - Xem cách hoạt động theo mặc định của các mạng tùy chỉnh.
+- Hiểu sự khác nhau khi sử dụng DNS giữa default networl và custom network, 
 - Học cách sử dụng --link để bật DNS trên default bridge network
 - Điều quan trọng cần nhớ với tất cả container và virtual network khi họ giao tiếp với nhau đó là "naming" bởi vì thế giới của container thay đổi liên tục (xóa,mở rộng...) nên khi chúng giao tiếp thì sẽ không dùng IP, sử dụng IP là anti-pattern chúng ta không thể giả sử các địa chỉ IP là giống nhau container có thể mở rộng đóng hoặc thất bại.
 => giải pháp thích hợp cho chuyện này là sử dụng DNS
 
 - Docker sử dụng container name tương đương vs host name để các container có thế nói chuyện với nhau.
-
+- Mỗi container khi join vào một network nó đều public port của nó trong network đó, nhưng không public port cho giao diện bên ngoài trừ khi bạn dùng option -p.
 - Khi chúng ta tạo ra một network mới (không phải theo mặc định bridge) thì những container trên nó sẽ được tích hợp một tính năng đặc biệt là Hệ thống phân giải tên miền (DNS) 
 - Mọi container trên virtual network (not default) sử dụng container name.
 - Nếu tôi tạo thùng chứa thứ 2 trên mạng ảo này thì 2 container có thể tìm thấy nhau bất kể IP là gì.
@@ -334,6 +321,7 @@ Docker Network : DNS
 -Docker để mặc định tên của máy chủ chính là tên của container nhưng có thể đặt alias cho nó.
 
 
+=> Sự khác biệt lớn nhất giữa việc sử dụng customNetwork và defaultNetwork đó là khi sử dụng defaultNetwork chúng ta không được thích hợp theo mặc định, thay vào đó bạn có thể sử dụng --link để các container trong defaultNetwork có thể giao tiếp được với nhau. docker container create --link
 
 
 
@@ -419,6 +407,9 @@ Docker Image
 + Không có OS, không có kernel , hay kernel module (không có driver) 
 + Image thực sự chỉ là các tệp binaries mà ứng dụng của bạn cần vì server cung cấp kernel
 + Điều khác biệt của contaienr vs virtual machine đó chính là nó không dựng HĐH đầy đủ như virtual machine.
+- Sử dụng lệnh : docker image history ${imageName}
++ Lệnh này không phải để dùng show lịch sử  thay đổi của image, nói chính xác đây là lịch sử thay đổi của các lớp trong một image,
+
 + Image layers là gì ? cần chú ý vì đây là khái niệm cơ bản của docker
 + Image layers sử dụng một thứ được gọi là union file system để trình bày một loại các thay đổi của hệ thống tệp như một hệ thống file thực tế
 + history and inspect commands (chúng ta sẽ đi sâu vào lịch sử và lệnh inspect để có thể sử dụng chúng hiểu Image được tạo ra bằng cái gì ?)
@@ -433,14 +424,14 @@ Docker Image
 + Hãy tưởng tượng image như một tập hợp các lớp
 - Lớp dưới cùng là blank layer
 - Mỗi thay đổi trên image sẽ tạo ra một lớp bao phủ lên image
-- Điều hay của image đó là nó có khả năng tái sử dụng lại, docker sẽ dựa vào SHA để kiểm tra xem layer đó đã được tạo hay chưa rồi mới quyết định tải nó. Tóm lại chúng ta không bao giờ lưu 2 Layer Image giống nhau, 
+- Điều hay của image đó là nó có khả năng tái sử dụng lại, docker sẽ dựa vào SHA để kiểm tra xem layer đó (SHA) đã được tạo hay chưa rồi mới quyết định tải nó. Tóm lại chúng ta không bao giờ lưu 2 Layer Image giống nhau, 
 
 Ví dụ : Giả sử chúng ta có Apache Image và chúng ta muốn chạy một container trên Apache Image thì tất cả những gì docker làm là tạo ra một Layer read and write cho container đó trên đầu (top) của Image, nếu chúng ta tạo một container thứ 2 (đương nhiên lúc này nó lại ở trên đầu của container thứ nhất) thì sự khác biết giữa 2 container này chỉ là chúng đọc dữ liệu từ Image như thế nào mà thôi.
 => Khi bạn chạy container về cơ bản bạn đang thay đổi tệp chạy container đó trong Image điều này được gọi là copy on write
 => File system sẽ lấy tệp tin trong Image (dùng để chạy container) và copy 
 => Container đơn giản chỉ là một quá trình (process) và những tệp khác của Image
 
-
+- Một image bao gồm 3 phần là BinaryData, Dependency và meta của nó
 - Sử dụng docker image inspect ${imageName} điều này về cơ bản cung cấp thông tin cho chúng ta về hình ảnh như metadata, tag, idImage...
 
 
