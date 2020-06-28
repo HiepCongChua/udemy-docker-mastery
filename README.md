@@ -533,3 +533,52 @@ Một lý do khiến chúng được chọn là cách ưa thích để thêm kh�
 - Tiếp tục nhìn vào file Dockerfile (dockerfile-sample-1) mỗi phần (nói dễ hiều hơn là khổ) của file thực chất đều là một layer của Image (điều này đã nói ở phần layer cần liên hệ) vì vậy thứ tự của chúng thực sự quan trọng vì nó chạy từ trên xuống dưới. điều này thực sự quan trọng 
 - Chú ý nữa rằng nếu bạn muốn xuống dòng ở một khổ bạn cần sử dụng keywork "\&"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Phần 5 LifeTimeData && PersistentData
+
+
+- Khi triển khai một container nếu chúng ta cần cấu hình lại, nâng cấp... khi đó chúng ta cần phải tạo ra một container hoàn toàn mới điều nay là cấp thiết bởi vì nó giúp chúng ta cập nhật liên tục các container nhưng điều gì xảy ra với dữ liệu trong quá trình chạy container (PersistentData) ?
+=> Lý tưởng nhất là chúng ta sẽ tách Dữ liệu của container(BinaryData) và Dữ liệu sinh ra trong quá trình chạy container (PersistentData)
+=> Như vậy chúng ta có thể bảo tồn dữ liệu trong quá trình chạy một container.
+=> Để giải quyết vấn đề này docker cung cấp 2 giải pháp.
++ Volumes : Là một tùy chọn, chúng ta sẽ tạo ra một vị trí riêng biệt bên ngoài container gọi là unionFileSystem để lưu uniqueData, bảo tồn uniqueData và cho phép chúng ta mount nó vào bất cứ điều gì chúng ta muốn, container nhìn nó đơn giản chỉ như một đường dẫ n cục bộ
++ Bind Mount : hiểu đơn giản là nó mount hoặc có thể hiểu là chia sẻ thư mục của host với container nó cũng giống như một đường dẫn tập trên local, container không thẻ biết nó là của host.
+
+- Để xem cấu hình volume của một image chúng ta có thể sử dụng lệnh : docker image inspect ${containerName}
+
+- Để xem cấu hình mount của một container chúng ta có thể sử dụng lệnh docker container inspect ${containerName} xem ở "Mounts" , hiểu đơn giản container nghĩ rằng nó đang ghi data vào Destiantion nhưng thực chất vị trí này được map vs một thư mục của máy host.
+
+
+ * PersistentData: BindMounting.
+ - Hiểu đơn giản là nó map thực mục hoặc một tệp tin nào đó của máy host 
+ - Về cơ bản ở dưới background thì có 2 vị trí cùng trỏ đến một vị trí vật lý trên đĩa.
+ - Sử dụng option -v $(pwd):/usr/share/nginx/html trên linux để  mount một thư mục trên máy host với volume của container.

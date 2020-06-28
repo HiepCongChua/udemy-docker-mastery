@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Welcome to Jekyll!"
+title:  "Welcome Le Minh Hiep to Jekyll!"
 date:   2017-03-05 08:37:38 +0000
 categories: jekyll update
 ---

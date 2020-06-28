@@ -4,11 +4,20 @@ version: '2'
 # docker run -p 80:4000 -v $(pwd):/site bretfisher/jekyll-serve
 
 services:
-  jekyll:
-    image: bretfisher/jekyll-serve
-    volumes:
-      - .:/site
+  drupal:
+    image: drupal
     ports:
-      - '80:4000'
+      - '8080:80'
+    volumes: 
+      - /var/www/html/modules
+      - /var/www/html/profiles
+      - /var/www/html/themes
+  postgres:
+    image: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: hiep21995446
+     
 
 
