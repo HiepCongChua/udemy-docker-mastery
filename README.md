@@ -582,3 +582,8 @@ Phần 5 LifeTimeData && PersistentData
  - Hiểu đơn giản là nó map thực mục hoặc một tệp tin nào đó của máy host 
  - Về cơ bản ở dưới background thì có 2 vị trí cùng trỏ đến một vị trí vật lý trên đĩa.
  - Sử dụng option -v $(pwd):/usr/share/nginx/html trên linux để  mount một thư mục trên máy host với volume của container.
+
+
+ Docker-compose : Tất cả chỉ là về cách 1 container sẽ chạy như thế nào ?
+ - Những gì docker-compose đang làm thực chất chỉ là nó giao tiếp vs docker api dưới nền, nó thay mặt cho docker cli.
+ - thay vì chúng ta phải gõ đi gõ lại docker container run như thế nào thì chúng ta chỉ cần viết nó 1 tệp, cần sửa thì sửa thôi.
